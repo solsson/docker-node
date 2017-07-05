@@ -37,12 +37,13 @@ RUN buildDeps='curl ca-certificates xz-utils' \
   && ln -s /usr/local/bin/node /usr/local/bin/nodejs \
   && apt-get purge -y --auto-remove $buildDeps \
   \
-  #&& find / -newer /dev-timestamp -maxdepth 10 -mindepth 1 | grep -v /sys/ | grep -v /proc/ \
-  && find /usr/share -newer /dev-timestamp -type f -exec rm '{}' \; \
-  && find /var/lib   -newer /dev-timestamp -type f -exec rm '{}' \; \
-  && find /var/cache -newer /dev-timestamp -type f -exec rm '{}' \; \
-  && find /var/log   -newer /dev-timestamp -type f -exec rm '{}' \; \
-  && rm -Rf /root/.gnupg \
+  && find / -newer /dev-timestamp -maxdepth 10 -mindepth 1 -prune | grep -v /sys/ | grep -v /proc/ \
+  && find / -newer /dev-timestamp -maxdepth 10 -mindepth 1 -type f | grep -v /sys/ | grep -v /proc/ \
+  && find /usr/share -newer /dev-timestamp -type f -exec rm -v '{}' \; \
+  && find /var/lib   -newer /dev-timestamp -type f -exec rm -v '{}' \; \
+  && find /var/cache -newer /dev-timestamp -type f -exec rm -v '{}' \; \
+  && find /var/log   -newer /dev-timestamp -type f -exec rm -v '{}' \; \
+  && rm -Rfv /root/.gnupg \
   && rm /dev-timestamp
 
 CMD [ "node" ]
