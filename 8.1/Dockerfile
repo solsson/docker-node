@@ -25,6 +25,7 @@ ENV NODE_VERSION 8.1.3
 
 RUN buildDeps='curl ca-certificates xz-utils' \
   && set -x \
+  && touch /dev-timestamp \
   && apt-get update && apt-get install -y $buildDeps --no-install-recommends \
   && rm -rf /var/lib/apt/lists/* \
   && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" \
@@ -34,6 +35,14 @@ RUN buildDeps='curl ca-certificates xz-utils' \
   && tar -xJf "node-v$NODE_VERSION-linux-x64.tar.xz" -C /usr/local --strip-components=1 \
   && rm "node-v$NODE_VERSION-linux-x64.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
   && ln -s /usr/local/bin/node /usr/local/bin/nodejs \
-  && apt-get purge -y --auto-remove $buildDeps
+  && apt-get purge -y --auto-remove $buildDeps \
+  \
+  #&& find / -newer /dev-timestamp -maxdepth 10 -mindepth 1 | grep -v /sys/ | grep -v /proc/ \
+  && find /usr/share -newer /dev-timestamp -type f -exec rm '{}' \; \
+  && find /var/lib   -newer /dev-timestamp -type f -exec rm '{}' \; \
+  && find /var/cache -newer /dev-timestamp -type f -exec rm '{}' \; \
+  && find /var/log   -newer /dev-timestamp -type f -exec rm '{}' \; \
+  && rm -Rf /root/.gnupg \
+  && rm /dev-timestamp
 
 CMD [ "node" ]
