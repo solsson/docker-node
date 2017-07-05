@@ -1,10 +1,16 @@
-FROM debian:jessie
+FROM debian:stable-20170620
 
 RUN groupadd --gid 1000 node \
   && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
 
-# gpg keys listed at https://github.com/nodejs/node#release-team
-RUN set -ex \
+ENV NPM_CONFIG_LOGLEVEL info
+ENV NODE_VERSION 8.1.3
+
+RUN buildDeps='gnupg dirmngr curl ca-certificates xz-utils' \
+  && set -ex \
+  && apt-get update && apt-get install -y $buildDeps --no-install-recommends \
+  && rm -rf /var/lib/apt/lists/* \
+  # gpg keys listed at https://github.com/nodejs/node#release-team
   && for key in \
     9554F04D7259F04124DE6B476D5A82AC7E37093B \
     94AE36675C464D64BAFA68DD7434390BDBE9B9C5 \
@@ -18,15 +24,7 @@ RUN set -ex \
     gpg --keyserver pgp.mit.edu --recv-keys "$key" || \
     gpg --keyserver keyserver.pgp.com --recv-keys "$key" || \
     gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" ; \
-  done
-
-ENV NPM_CONFIG_LOGLEVEL info
-ENV NODE_VERSION 8.1.3
-
-RUN buildDeps='curl ca-certificates xz-utils' \
-  && set -x \
-  && apt-get update && apt-get install -y $buildDeps --no-install-recommends \
-  && rm -rf /var/lib/apt/lists/* \
+  done \
   && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" \
   && curl -SLO --compressed "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
   && gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc \
